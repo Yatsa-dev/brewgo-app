@@ -1,6 +1,4 @@
-// Палітра перенесена зі стилів Figma-макета (файл Яцишин_Ігор_cross_assignment_2,
-// сторінка «2. Hi-Fi дизайн»). Назви ключів повторюють назви стилів у Figma,
-// щоб макет і код можна було звіряти один в один.
+// Key names mirror the style names in the Figma file.
 export const colors = {
   espresso: '#2B1B14',
   coffee: '#7A4E2D',

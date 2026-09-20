@@ -3,8 +3,6 @@ import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 import { colors, radii, sizes, spacing, typography } from '../theme';
 
-// Три варіанти кнопки з макета: суцільна темна (основна дія на екрані),
-// контурна (другорядна дія) і текстова (третьорядна, без фону).
 const VARIANT_STYLES = {
   primary: {
     container: { backgroundColor: colors.espresso },

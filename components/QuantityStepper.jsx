@@ -7,8 +7,6 @@ const ACTIVE_OPACITY = 0.7;
 const STEPPER_HEIGHT = 30;
 const BUTTON_WIDTH = 30;
 
-// Степер кількості. Виніс окремо від CartItem, бо той самий елемент
-// знадобиться на екрані деталей напою.
 export default function QuantityStepper({ value = 1, min = 1, max = 99, onChange }) {
   const canDecrease = value > min;
   const canIncrease = value < max;

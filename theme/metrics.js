@@ -1,5 +1,3 @@
-// Крок сітки з макета — 4 px. Усі відступи кратні йому, тому в стилях
-// не зустрічаються довільні числа.
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -10,7 +8,6 @@ export const spacing = {
   xxxl: 32,
 };
 
-// Радіуси теж узяті з макета: дрібні елементи 8–14, картки 20, pill-кнопки 28.
 export const radii = {
   sm: 8,
   md: 14,
@@ -19,7 +16,6 @@ export const radii = {
   pill: 28,
 };
 
-// Розміри, які повторюються в кількох компонентах.
 export const sizes = {
   iconSm: 16,
   iconMd: 20,
@@ -31,6 +27,5 @@ export const sizes = {
   thumbMd: 64,
 };
 
-// Ширина екрана, з якої вважаємо пристрій «широким» (планшет або ландшафт телефона).
-// На таких екранах сітка карток перемикається з двох колонок на три.
+// Width at which the product grid switches from two columns to three.
 export const WIDE_SCREEN_BREAKPOINT = 700;

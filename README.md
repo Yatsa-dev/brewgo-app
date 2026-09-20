@@ -1,81 +1,67 @@
-# BrewGo — базові компоненти інтерфейсу (ДЗ 3)
+# BrewGo — UI-компоненти
 
-Мобільний застосунок для замовлення кави на самовивіз. Це третє завдання наскрізного проєкту:
-у попередніх зроблено вайрфрейм і високодеталізований дизайн у Figma, тут дизайн перенесено
-в React Native у вигляді набору перевикористовуваних компонентів.
+Застосунок для замовлення кави на самовивіз. Компоненти перенесені з макета Figma
+`Яцишин_Ігор_cross_assignment_2`.
 
-Макет, з якого перенесено компоненти:
-[Яцишин_Ігор_cross_assignment_2](https://www.figma.com/design/EUHmWofwWtlqsrJd2XY2o7/), сторінка «2. Hi-Fi дизайн».
+## Стек
+
+Expo SDK 57, React Native 0.86, React 19.
 
 ## Запуск
 
 ```bash
 npm install
-npm start        # далі a — Android, i — iOS, w — web
+npm start
 ```
+
+Далі `a` — Android, `i` — iOS, `w` — web.
 
 ## Структура
 
 ```
-components/     8 компонентів, кожен в окремому файлі
-hooks/          useCardWidth — розрахунок ширини картки під розмір екрана
-theme/          кольори, типографіка, відступи, радіуси, тіні
-data/           тимчасові дані для демонстрації (у ДЗ5 їх замінить API)
-App.js          екран-вітрина, який показує всі компоненти
+components/   UI-компоненти, кожен в окремому файлі
+hooks/        useCardWidth — розрахунок ширини картки
+theme/        кольори, типографіка, відступи, радіуси, тіні
+data/         дані для демонстрації
+App.js        екран зі списком усіх компонентів
 ```
 
 ## Компоненти
 
-| Компонент | Призначення | Основні пропси |
-| --- | --- | --- |
-| `CustomButton` | Кнопка у трьох варіантах: основна, контурна, текстова. Підтримує іконку | `title`, `variant`, `iconName`, `disabled`, `onPress` |
-| `ProductCard` | Картка напою: фото, назва, обʼєм, рейтинг, ціна, кнопка додавання | `title`, `volume`, `price`, `rating`, `imageUrl`, `width`, `onPress`, `onAdd` |
-| `Header` | Шапка: точка самовивозу зліва, кошик із лічильником справа | `title`, `cartCount`, `onPressLocation`, `onPressCart` |
-| `SearchBar` | Поле пошуку з мікропідказками під ним | `value`, `onChangeText`, `hints`, `placeholder` |
-| `CategoryTabs` | Категорії меню з горизонтальною прокруткою | `categories`, `activeId`, `onChange` |
-| `CartItem` | Рядок кошика: фото, назва, опції, кількість, сума | `title`, `options`, `price`, `quantity`, `imageUrl`, `onChangeQuantity` |
-| `QuantityStepper` | Степер кількості, винесений окремо для перевикористання | `value`, `min`, `max`, `onChange` |
-| `Badge` | Лічильник над іконкою. При нульовому значенні не рендериться | `value`, `max`, `backgroundColor` |
-| `PromoBanner` | Промо-банер з дією | `title`, `subtitle`, `actionLabel`, `onPress` |
+| Компонент | Пропси |
+| --- | --- |
+| `CustomButton` | `title`, `variant`, `iconName`, `iconPosition`, `disabled`, `fullWidth`, `onPress` |
+| `ProductCard` | `title`, `volume`, `price`, `rating`, `imageUrl`, `width`, `onPress`, `onAdd` |
+| `Header` | `label`, `title`, `cartCount`, `onPressLocation`, `onPressCart` |
+| `SearchBar` | `value`, `onChangeText`, `placeholder`, `hints`, `onSubmit` |
+| `CategoryTabs` | `categories`, `activeId`, `onChange` |
+| `CartItem` | `title`, `options`, `price`, `quantity`, `imageUrl`, `onChangeQuantity` |
+| `QuantityStepper` | `value`, `min`, `max`, `onChange` |
+| `Badge` | `value`, `max`, `backgroundColor` |
+| `PromoBanner` | `title`, `subtitle`, `actionLabel`, `onPress` |
 
-## Як закрито вимоги завдання
+## Реалізація
 
-**Базові компоненти React Native.** `View` — контейнери в усіх компонентах, `Text` — весь текст,
-`Image` — фото в `ProductCard` і `CartItem`, `TouchableOpacity` — кнопки, картки, чипи, підказки,
-`ScrollView` — горизонтальний список категорій, `FlatList` — сітка напоїв у `App.js`
-з `numColumns`, `keyExtractor`, `renderItem`, `ListHeaderComponent` і `ListFooterComponent`.
-`TextInput` використано в полі пошуку.
-
-**Стилізація.** Усі стилі через `StyleSheet.create()`. Розкладка побудована на Flexbox:
-`flexDirection`, `justifyContent`, `alignItems`, `flex: 1` для розтягування середньої колонки
-в `CartItem`, `flexWrap` для підказок пошуку. `Platform.select()` застосовано двічі:
-в `theme/shadows.js` (iOS малює тіні через `shadow*`, Android через `elevation`)
-і в `theme/typography.js` (різні системні гарнітури та напівжирні накреслення).
-
-**Адаптивність.** Хук `useCardWidth` рахує ширину картки від `useWindowDimensions()`:
-`(ширина екрана − бічні поля − проміжки) / кількість колонок`. Обрано саме
-`useWindowDimensions`, а не `Dimensions.get()`, бо він оновлюється при повороті екрана.
-На екрані ширшому за 700 px сітка перемикається з двох колонок на три — це видно
-на третьому скриншоті. `FlatList` отримує `key={columns}`, інакше він не перебудовує сітку
-при зміні `numColumns` на льоту.
-
-**Архітектура.** Кожен компонент в окремому файлі, дані передаються тільки через пропси,
-жодних захардкоджених значень у стилях: кольори, відступи, радіуси й розміри лежать у `theme/`
-і мають імена, що збігаються з назвами стилів у Figma. Коментарями пояснено неочевидне —
-чому бейдж позиціонується абсолютно, навіщо `key` у `FlatList`, чому обнулено `paddingVertical`
-у `TextInput`.
+- Компоненти RN: `View`, `Text`, `Image`, `TextInput`, `TouchableOpacity`,
+  `ScrollView` (категорії), `FlatList` (сітка напоїв — `numColumns`, `keyExtractor`,
+  `ListHeaderComponent`, `ListFooterComponent`).
+- Стилі: `StyleSheet.create()`, Flexbox, `Platform.select()` у `theme/shadows.js`
+  (тіні iOS / Android) і `theme/typography.js` (гарнітури).
+- Адаптивність: `useWindowDimensions()` у `hooks/useCardWidth.js`;
+  ширина картки = (ширина екрана − поля − проміжки) / кількість колонок;
+  від 700 px сітка перемикається з двох колонок на три.
+- Константи кольорів, відступів, радіусів і розмірів — у `theme/`.
 
 ## Скриншоти
 
-Головний екран, портретна орієнтація:
+Головний екран:
 
 ![Головний екран](screenshots/01-home-portrait.png)
 
-Усі компоненти на одному екрані — картки, кошик зі степерами, кнопки в чотирьох станах, лічильники:
+Усі компоненти:
 
-![Вітрина компонентів](screenshots/02-components-portrait.png)
+![Компоненти](screenshots/02-components-portrait.png)
 
-Широкий екран (ландшафт / планшет) — сітка перебудовується на три колонки,
-вміщуються всі категорії:
+Широкий екран — три колонки:
 
-![Ландшафтна орієнтація](screenshots/03-landscape.png)
+![Широкий екран](screenshots/03-landscape.png)

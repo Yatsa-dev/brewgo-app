@@ -3,7 +3,6 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import QuantityStepper from './QuantityStepper';
 import { colors, radii, shadows, sizes, spacing, typography } from '../theme';
 
-// Рядок кошика: фото, назва, вибрані опції, степер кількості та сума позиції.
 export default function CartItem({
   title,
   options,
@@ -50,8 +49,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.muted,
   },
   body: {
-    // flex: 1 віддає середній колонці весь вільний простір, тому ціна
-    // залишається притиснутою до правого краю незалежно від довжини назви.
+    // Takes the free space so the price stays pinned to the right edge.
     flex: 1,
     gap: spacing.xs,
   },

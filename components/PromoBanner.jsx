@@ -6,8 +6,7 @@ const ACTIVE_OPACITY = 0.9;
 const BANNER_HEIGHT = 96;
 const DECOR_SIZE = 120;
 
-// Промо-банер з головного екрана. Декоративне коло — звичайний View з великим
-// radius; банер має overflow: 'hidden', тому коло не вилазить за скруглені кути.
+// overflow: 'hidden' keeps the decorative circle inside the banner.
 export default function PromoBanner({ title, subtitle, actionLabel, onPress }) {
   return (
     <View style={styles.container}>

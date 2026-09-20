@@ -14,8 +14,7 @@ import { categories, cartItems as initialCartItems, products, searchHints } from
 import { useCardWidth } from './hooks/useCardWidth';
 import { colors, spacing, typography } from './theme';
 
-// Екран-вітрина для домашнього завдання 3: показує всі створені компоненти
-// з реальними пропсами. Навігація та робота з API з'являться в наступних завданнях.
+// Showcase screen that renders every component with real props.
 export default function App() {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
@@ -84,8 +83,8 @@ export default function App() {
     <SafeAreaView style={styles.screen}>
       <StatusBar style="dark" />
       <FlatList
-        // FlatList не перебудовує сітку при зміні numColumns на льоту,
-        // тому key змушує його перемонтуватися після повороту екрана.
+        // FlatList does not rebuild the grid when numColumns changes,
+        // so the key forces a remount after rotation.
         key={columns}
         data={products}
         keyExtractor={(item) => item.id}

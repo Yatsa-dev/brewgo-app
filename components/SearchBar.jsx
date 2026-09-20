@@ -5,8 +5,6 @@ import { colors, radii, sizes, spacing, typography } from '../theme';
 
 const ACTIVE_OPACITY = 0.7;
 
-// Поле пошуку з мікропідказками: поки текст порожній, під полем показуємо
-// найчастіші запити. Тап по підказці одразу підставляє її у поле.
 export default function SearchBar({
   value = '',
   onChangeText,
@@ -78,7 +76,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     flex: 1,
     color: colors.textPrimary,
-    // Прибираємо типовий вертикальний padding Android, інакше текст з'їжджає вниз.
+    // Reset the default Android vertical padding, otherwise the text sits too low.
     paddingVertical: 0,
   },
   hints: {

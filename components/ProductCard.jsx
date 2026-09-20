@@ -4,7 +4,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, radii, shadows, sizes, spacing, typography } from '../theme';
 
 const ACTIVE_OPACITY = 0.9;
-const IMAGE_RATIO = 0.62; // висота фото = 62% ширини картки, як у макеті
+const IMAGE_RATIO = 0.62; // image height relative to card width
 
 export default function ProductCard({
   title,

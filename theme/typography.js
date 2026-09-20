@@ -1,15 +1,12 @@
 import { Platform } from 'react-native';
 
-// У макеті вся типографіка побудована на Inter. Щоб не тягнути файли шрифту
-// в навчальний проєкт, беремо системний шрифт платформи — він найближчий за метрикою.
 const fontFamily = Platform.select({
   ios: 'System',
   android: 'sans-serif',
   default: 'System',
 });
 
-// Android не підтримує проміжні значення fontWeight для системного шрифту так само,
-// як iOS, тому напівжирний підміняємо на sans-serif-medium.
+// Android has no intermediate fontWeight for the system font, so the medium face is set explicitly.
 const mediumFamily = Platform.select({
   ios: 'System',
   android: 'sans-serif-medium',

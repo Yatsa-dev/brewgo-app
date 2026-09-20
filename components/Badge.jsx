@@ -5,8 +5,7 @@ import { colors, typography } from '../theme';
 const BADGE_SIZE = 18;
 const DEFAULT_MAX = 99;
 
-// Лічильник над іконкою кошика. Якщо значення нульове — компонент нічого не малює,
-// щоб батьківський екран не мусив писати умову на кожному виклику.
+// Renders nothing at zero so callers don't need their own condition.
 export default function Badge({ value = 0, max = DEFAULT_MAX, backgroundColor = colors.caramel }) {
   if (!value || value <= 0) return null;
 

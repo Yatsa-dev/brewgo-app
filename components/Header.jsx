@@ -6,7 +6,6 @@ import { colors, sizes, spacing, typography } from '../theme';
 
 const ACTIVE_OPACITY = 0.7;
 
-// Шапка головного екрана: зліва точка самовивозу, справа кошик із лічильником.
 export default function Header({
   label = 'ЗАБРАТИ В',
   title,
@@ -39,7 +38,7 @@ export default function Header({
         accessibilityLabel={`Кошик, товарів: ${cartCount}`}
       >
         <Ionicons name="bag-handle-outline" size={sizes.iconMd} color={colors.textOnDark} />
-        {/* Бейдж винесено за межі круглої кнопки, тому позиціонуємо його абсолютно. */}
+        {/* The badge overflows the round button, hence absolute positioning. */}
         <View style={styles.badge}>
           <Badge value={cartCount} />
         </View>

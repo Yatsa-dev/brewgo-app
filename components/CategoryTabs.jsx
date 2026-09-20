@@ -5,9 +5,8 @@ import { colors, radii, spacing, typography } from '../theme';
 const ACTIVE_OPACITY = 0.8;
 const TAB_HEIGHT = 36;
 
-// Категорії меню з горизонтальною прокруткою. Ширина чипа визначається текстом,
-// тому на вузькому екрані зайві категорії просто ховаються за межу скролу,
-// а не стискаються й не обрізаються.
+// Chip width follows its label: on a narrow screen the extra categories
+// scroll out of view instead of shrinking.
 export default function CategoryTabs({ categories = [], activeId, onChange }) {
   return (
     <ScrollView
