@@ -6,40 +6,44 @@ import CategoryTabs from '../components/CategoryTabs';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import PromoBanner from '../components/PromoBanner';
+import RequestState from '../components/RequestState';
 import SearchBar from '../components/SearchBar';
-import { cartItems, categories, products, searchHints } from '../data/products';
+import { CATEGORIES } from '../api/coffee';
+import { cartItems, searchHints } from '../data/products';
 import { useCardWidth } from '../hooks/useCardWidth';
+import { STATUS, useCoffeeMenu } from '../hooks/useCoffeeMenu';
 import { SCREENS, STACKS } from '../navigation/routes';
 import { colors, spacing, typography } from '../theme';
 
 export default function HomeScreen({ navigation }) {
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState(categories[0].id);
+  const [category, setCategory] = useState(CATEGORIES[0].id);
   const { cardWidth, columns } = useCardWidth();
 
-  const visibleProducts = products.filter((item) =>
+  const { status, drinks, error, reload } = useCoffeeMenu(category);
+
+  const visibleDrinks = drinks.filter((item) =>
     item.title.toLowerCase().includes(query.trim().toLowerCase())
   );
 
-  const openProduct = (productId) => navigation.navigate(SCREENS.PRODUCT_DETAILS, { productId });
+  // The details screen loads the drink itself, so only the id and its category travel.
+  const openDrink = (drinkId) =>
+    navigation.navigate(SCREENS.PRODUCT_DETAILS, { drinkId, category });
 
   const header = (
     <View style={styles.section}>
       <Header
         title="Січових Стрільців, 12"
         cartCount={cartItems.length}
-        // openDrawer bubbles up from the stack to the drawer that wraps the tabs.
         onPressMenu={() => navigation.dispatch(DrawerActions.openDrawer())}
         onPressCart={() => navigation.getParent()?.navigate(STACKS.CART)}
       />
       <SearchBar value={query} onChangeText={setQuery} hints={searchHints} />
-      <CategoryTabs
-        categories={categories}
-        activeId={activeCategory}
-        onChange={setActiveCategory}
-      />
+      <CategoryTabs categories={CATEGORIES} activeId={category} onChange={setCategory} />
       <PromoBanner title="−20% на раф" subtitle="До кінця тижня" actionLabel="Дивитись" />
-      <Text style={styles.sectionTitle}>Популярне</Text>
+      {status === STATUS.SUCCESS ? (
+        <Text style={styles.sectionTitle}>Меню · {visibleDrinks.length}</Text>
+      ) : null}
     </View>
   );
 
@@ -48,23 +52,28 @@ export default function HomeScreen({ navigation }) {
       // FlatList does not rebuild the grid when numColumns changes,
       // so the key forces a remount after rotation.
       key={columns}
-      data={visibleProducts}
+      data={status === STATUS.SUCCESS ? visibleDrinks : []}
       keyExtractor={(item) => item.id}
       numColumns={columns}
       columnWrapperStyle={columns > 1 ? styles.row : undefined}
       contentContainerStyle={styles.content}
       ListHeaderComponent={header}
-      ListEmptyComponent={<Text style={styles.empty}>Нічого не знайшли за запитом</Text>}
+      ListEmptyComponent={
+        status === STATUS.SUCCESS ? (
+          <Text style={styles.empty}>Нічого не знайшли за запитом</Text>
+        ) : (
+          <RequestState status={status} error={error} onRetry={reload} />
+        )
+      }
       renderItem={({ item }) => (
         <ProductCard
           title={item.title}
           volume={item.volume}
           price={item.price}
-          rating={item.rating}
           imageUrl={item.imageUrl}
           width={cardWidth}
-          onPress={() => openProduct(item.id)}
-          onAdd={() => openProduct(item.id)}
+          onPress={() => openDrink(item.id)}
+          onAdd={() => openDrink(item.id)}
         />
       )}
     />

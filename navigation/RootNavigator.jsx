@@ -19,7 +19,7 @@ const navigationTheme = {
 };
 
 // Explicit paths for every screen: on web this turns the nested navigators into
-// readable URLs, and productId travels in the path instead of being lost on reload.
+// readable URLs, and drinkId travels in the path instead of being lost on reload.
 const linking = {
   prefixes: [],
   config: {
@@ -29,13 +29,13 @@ const linking = {
           [STACKS.MENU]: {
             screens: {
               [SCREENS.HOME]: 'menu',
-              [SCREENS.PRODUCT_DETAILS]: 'menu/:productId',
+              [SCREENS.PRODUCT_DETAILS]: 'menu/:drinkId',
             },
           },
           [STACKS.SEARCH]: {
             screens: {
               [SCREENS.SEARCH]: 'search',
-              [SCREENS.PRODUCT_DETAILS]: 'search/:productId',
+              [SCREENS.PRODUCT_DETAILS]: 'search/:drinkId',
             },
           },
           [STACKS.CART]: {

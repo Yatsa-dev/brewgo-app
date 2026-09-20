@@ -1,52 +1,90 @@
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import CustomButton from '../components/CustomButton';
 import QuantityStepper from '../components/QuantityStepper';
-import { getProductById } from '../data/products';
+import RequestState from '../components/RequestState';
+import { CATEGORIES, fetchDrinkById } from '../api/coffee';
 import { SCREENS, STACKS, TITLES } from '../navigation/routes';
+import { STATUS } from '../hooks/useCoffeeMenu';
 import { colors, radii, spacing, typography } from '../theme';
 
 const SIZES = ['250 мл', '350 мл', '450 мл'];
 const MILK = ['Звичайне', 'Безлактозне', 'Рослинне'];
 
 export default function ProductDetailsScreen({ route, navigation }) {
-  // The screen can be reached from several places, so params are never trusted:
-  // a missing or unknown productId falls through to the error state below.
-  const productId = route.params?.productId;
-  const product = productId ? getProductById(productId) : undefined;
+  // Params are never trusted: a missing id short-circuits to the error state
+  // without firing a request.
+  const drinkId = route.params?.drinkId;
+  const category = route.params?.category ?? CATEGORIES[0].id;
+
+  const [status, setStatus] = useState(drinkId ? STATUS.LOADING : STATUS.ERROR);
+  const [drink, setDrink] = useState(null);
+  const [error, setError] = useState(drinkId ? null : 'Екран відкрито без коду напою.');
 
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState(SIZES[0]);
   const [milk, setMilk] = useState(MILK[0]);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({ title: product?.title ?? TITLES[SCREENS.PRODUCT_DETAILS] });
-  }, [navigation, product]);
+  useEffect(() => {
+    if (!drinkId) return;
+    let active = true;
 
-  if (!product) {
+    const load = async () => {
+      setStatus(STATUS.LOADING);
+      try {
+        const result = await fetchDrinkById(drinkId, category);
+        if (!active) return;
+
+        if (result) {
+          setDrink(result);
+          setStatus(STATUS.SUCCESS);
+        } else {
+          setError(`У меню немає позиції з кодом ${drinkId}.`);
+          setStatus(STATUS.ERROR);
+        }
+      } catch (requestError) {
+        if (!active) return;
+        setError(requestError.message);
+        setStatus(STATUS.ERROR);
+      }
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [drinkId, category]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: drink?.title ?? TITLES[SCREENS.PRODUCT_DETAILS] });
+  }, [navigation, drink]);
+
+  if (status !== STATUS.SUCCESS || !drink) {
     return (
-      <View style={styles.errorScreen}>
-        <Text style={styles.errorTitle}>Напій не знайдено</Text>
-        <Text style={styles.errorText}>
-          {productId
-            ? `У меню немає позиції з кодом ${productId}.`
-            : 'Екран відкрито без коду напою.'}
-        </Text>
-        <CustomButton title="Повернутись до меню" onPress={() => navigation.popToTop()} />
+      <View style={styles.stateScreen}>
+        <RequestState status={status} error={error} loadingText="Завантажуємо напій…" />
+        {status === STATUS.ERROR ? (
+          <CustomButton title="Повернутись до меню" onPress={() => navigation.popToTop()} />
+        ) : null}
       </View>
     );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
+      <Image source={{ uri: drink.imageUrl }} style={styles.image} resizeMode="cover" />
 
       <View style={styles.titleRow}>
-        <Text style={styles.title}>{product.title}</Text>
-        <Text style={styles.price}>{product.price}</Text>
+        <Text style={styles.title}>{drink.title}</Text>
+        <Text style={styles.price}>{drink.price}</Text>
       </View>
-      <Text style={styles.rating}>★ {product.rating} · {product.volume}</Text>
+
+      {drink.description ? <Text style={styles.description}>{drink.description}</Text> : null}
+
+      {drink.ingredients.length > 0 ? (
+        <Text style={styles.ingredients}>Склад: {drink.ingredients.join(', ')}</Text>
+      ) : null}
 
       <Text style={styles.label}>РОЗМІР</Text>
       <OptionRow options={SIZES} value={size} onChange={setSize} />
@@ -60,14 +98,14 @@ export default function ProductDetailsScreen({ route, navigation }) {
       </View>
 
       <CustomButton
-        title={`Додати в кошик · ${product.price}`}
+        title={`Додати в кошик · ${drink.price}`}
         iconName="bag-add-outline"
         // The cart lives in its own tab, so the drink id is passed across navigators:
         // getParent() reaches the tab navigator, and params are forwarded to its screen.
         onPress={() =>
           navigation.getParent()?.navigate(STACKS.CART, {
             screen: SCREENS.CART,
-            params: { addedProductId: product.id },
+            params: { addedDrinkId: drink.id, category },
           })
         }
       />
@@ -97,6 +135,12 @@ const styles = StyleSheet.create({
     padding: spacing.xxl,
     gap: spacing.md,
   },
+  stateScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: spacing.md,
+    padding: spacing.xxl,
+  },
   image: {
     width: '100%',
     height: 240,
@@ -107,16 +151,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: spacing.md,
   },
   title: {
     ...typography.heading,
     color: colors.textPrimary,
+    flex: 1,
   },
   price: {
     ...typography.heading,
     color: colors.coffee,
   },
-  rating: {
+  description: {
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  ingredients: {
     ...typography.caption,
     color: colors.textSecondary,
   },
@@ -143,22 +193,5 @@ const styles = StyleSheet.create({
   quantityLabel: {
     ...typography.bodyStrong,
     color: colors.textPrimary,
-  },
-  errorScreen: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    padding: spacing.xxl,
-  },
-  errorTitle: {
-    ...typography.heading,
-    color: colors.textPrimary,
-    textAlign: 'center',
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
   },
 });

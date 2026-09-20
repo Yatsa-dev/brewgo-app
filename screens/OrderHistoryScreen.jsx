@@ -4,19 +4,20 @@ import CustomButton from '../components/CustomButton';
 import { STACKS, SCREENS } from '../navigation/routes';
 import { colors, radii, shadows, spacing, typography } from '../theme';
 
+// drinkId values match ids in the menu API, so "repeat" resolves to a real drink.
 const ORDERS = [
-  { id: '1024', date: '20 вересня', status: 'Готується', items: 'Капучіно 350 мл, Круасан', total: '150 ₴', productId: '1' },
-  { id: '1019', date: '18 вересня', status: 'Виконано', items: 'Латте 250 мл', total: '60 ₴', productId: '2' },
-  { id: '1012', date: '15 вересня', status: 'Виконано', items: 'Американо, Раф 350 мл', total: '115 ₴', productId: '3' },
+  { id: '1024', date: '20 вересня', status: 'Готується', items: 'Latte, Caramel Latte', total: '115 ₴', drinkId: '2' },
+  { id: '1019', date: '18 вересня', status: 'Виконано', items: 'Caramel Latte', total: '60 ₴', drinkId: '3' },
+  { id: '1012', date: '15 вересня', status: 'Виконано', items: 'Americano, Cappuccino', total: '110 ₴', drinkId: '4' },
 ];
 
 export default function OrderHistoryScreen({ navigation }) {
   // "Repeat" jumps to the cart tab and passes the drink id, which the cart screen
-  // turns into a new line item.
-  const repeat = (productId) =>
+  // resolves through the API into a new line item.
+  const repeat = (drinkId) =>
     navigation.getParent()?.navigate(STACKS.CART, {
       screen: SCREENS.CART,
-      params: { addedProductId: productId },
+      params: { addedDrinkId: drinkId },
     });
 
   return (
@@ -45,7 +46,7 @@ export default function OrderHistoryScreen({ navigation }) {
               variant="secondary"
               fullWidth={false}
               style={styles.repeat}
-              onPress={() => repeat(item.productId)}
+              onPress={() => repeat(item.drinkId)}
             />
           </View>
         </View>
