@@ -52,6 +52,8 @@ export const products = [
   },
 ];
 
+export const getProductById = (id) => products.find((item) => item.id === id);
+
 export const categories = [
   { id: 'coffee', label: 'Кава' },
   { id: 'tea', label: 'Чай' },
