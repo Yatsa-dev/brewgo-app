@@ -1,0 +1,73 @@
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { colors, radii, spacing, typography } from '../theme';
+
+const ACTIVE_OPACITY = 0.7;
+const STEPPER_HEIGHT = 30;
+const BUTTON_WIDTH = 30;
+
+// Степер кількості. Виніс окремо від CartItem, бо той самий елемент
+// знадобиться на екрані деталей напою.
+export default function QuantityStepper({ value = 1, min = 1, max = 99, onChange }) {
+  const canDecrease = value > min;
+  const canIncrease = value < max;
+
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => canDecrease && onChange?.(value - 1)}
+        disabled={!canDecrease}
+        activeOpacity={ACTIVE_OPACITY}
+        accessibilityRole="button"
+        accessibilityLabel="Зменшити кількість"
+      >
+        <Ionicons
+          name="remove"
+          size={16}
+          color={canDecrease ? colors.textPrimary : colors.border}
+        />
+      </TouchableOpacity>
+
+      <Text style={styles.value}>{value}</Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => canIncrease && onChange?.(value + 1)}
+        disabled={!canIncrease}
+        activeOpacity={ACTIVE_OPACITY}
+        accessibilityRole="button"
+        accessibilityLabel="Збільшити кількість"
+      >
+        <Ionicons name="add" size={16} color={canIncrease ? colors.textPrimary : colors.border} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    height: STEPPER_HEIGHT,
+    borderRadius: STEPPER_HEIGHT / 2,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  button: {
+    width: BUTTON_WIDTH,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  value: {
+    ...typography.caption,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    minWidth: spacing.xl,
+    textAlign: 'center',
+  },
+});
