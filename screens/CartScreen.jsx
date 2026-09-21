@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import CartItem from '../components/CartItem';
 import CustomButton from '../components/CustomButton';
-import { cartItems as initialItems, getProductById } from '../data/products';
+import { CATEGORIES, fetchDrinkById } from '../api/coffee';
+import { cartItems as initialItems } from '../data/products';
 import { SCREENS } from '../navigation/routes';
 import { colors, radii, spacing, typography } from '../theme';
 
@@ -11,46 +12,64 @@ const priceToNumber = (price) => Number(String(price).replace(/[^\d]/g, '')) || 
 
 export default function CartScreen({ route, navigation }) {
   const [items, setItems] = useState(initialItems);
-  const addedProductId = route.params?.addedProductId;
+  const [isAdding, setIsAdding] = useState(false);
 
-  // The details screen passes addedProductId. The param is cleared right after it is
-  // handled, otherwise returning to this tab would add the same drink again.
+  const addedDrinkId = route.params?.addedDrinkId;
+  const category = route.params?.category ?? CATEGORIES[0].id;
+
+  // Other screens hand over only the drink id, so the cart loads the rest itself.
+  // The param is cleared right after it is handled, otherwise returning to this
+  // tab would add the same drink again.
   useEffect(() => {
-    if (!addedProductId) return;
+    if (!addedDrinkId) return;
+    let active = true;
 
-    const product = getProductById(addedProductId);
-    if (product) {
-      setItems((current) => {
-        const existing = current.find((item) => item.productId === product.id);
-        if (existing) {
-          return current.map((item) =>
-            item.productId === product.id ? { ...item, quantity: item.quantity + 1 } : item
-          );
-        }
-        return [
-          ...current,
-          {
-            id: `${product.id}-${Date.now()}`,
-            productId: product.id,
-            title: product.title,
-            options: product.volume,
-            price: product.price,
-            quantity: 1,
-            imageUrl: product.imageUrl,
-          },
-        ];
-      });
-    }
+    const add = async () => {
+      setIsAdding(true);
+      try {
+        const drink = await fetchDrinkById(addedDrinkId, category);
+        if (!active || !drink) return;
 
-    navigation.setParams({ addedProductId: undefined });
-  }, [addedProductId, navigation]);
+        setItems((current) => {
+          const existing = current.find((item) => item.drinkId === drink.id);
+          if (existing) {
+            return current.map((item) =>
+              item.drinkId === drink.id ? { ...item, quantity: item.quantity + 1 } : item
+            );
+          }
+          return [
+            ...current,
+            {
+              id: `${drink.id}-${Date.now()}`,
+              drinkId: drink.id,
+              title: drink.title,
+              options: drink.volume,
+              price: drink.price,
+              quantity: 1,
+              imageUrl: drink.imageUrl,
+            },
+          ];
+        });
+      } catch {
+        // A failed add must not break the cart: the existing items stay as they are.
+      } finally {
+        if (active) setIsAdding(false);
+        navigation.setParams({ addedDrinkId: undefined });
+      }
+    };
+
+    add();
+    return () => {
+      active = false;
+    };
+  }, [addedDrinkId, category, navigation]);
 
   const total = items.reduce((sum, item) => sum + priceToNumber(item.price) * item.quantity, 0);
 
   const changeQuantity = (id, quantity) =>
     setItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)));
 
-  if (items.length === 0) {
+  if (items.length === 0 && !isAdding) {
     return (
       <View style={styles.empty}>
         <Text style={styles.emptyTitle}>Кошик порожній</Text>
@@ -72,6 +91,13 @@ export default function CartScreen({ route, navigation }) {
           onChangeQuantity={(quantity) => changeQuantity(item.id, quantity)}
         />
       ))}
+
+      {isAdding ? (
+        <View style={styles.adding}>
+          <ActivityIndicator color={colors.coffee} />
+          <Text style={styles.addingText}>Додаємо напій…</Text>
+        </View>
+      ) : null}
 
       <View style={styles.summary}>
         <View style={styles.summaryRow}>
@@ -96,6 +122,17 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.xxl,
     gap: spacing.md,
+  },
+  adding: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  addingText: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   summary: {
     padding: spacing.lg,
