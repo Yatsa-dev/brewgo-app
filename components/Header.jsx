@@ -10,11 +10,24 @@ export default function Header({
   label = 'ЗАБРАТИ В',
   title,
   cartCount = 0,
+  onPressMenu,
   onPressLocation,
   onPressCart,
 }) {
   return (
     <View style={styles.container}>
+      {onPressMenu ? (
+        <TouchableOpacity
+          style={styles.menu}
+          onPress={onPressMenu}
+          activeOpacity={ACTIVE_OPACITY}
+          accessibilityRole="button"
+          accessibilityLabel="Відкрити меню"
+        >
+          <Ionicons name="menu" size={sizes.iconLg} color={colors.textPrimary} />
+        </TouchableOpacity>
+      ) : null}
+
       <TouchableOpacity
         style={styles.location}
         onPress={onPressLocation}
@@ -53,6 +66,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.lg,
+  },
+  menu: {
+    width: sizes.controlSm,
+    height: sizes.controlSm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: -spacing.xs,
   },
   location: {
     flex: 1,

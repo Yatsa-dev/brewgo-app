@@ -1,0 +1,110 @@
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+
+import CustomButton from '../components/CustomButton';
+import { STACKS, SCREENS } from '../navigation/routes';
+import { colors, radii, shadows, spacing, typography } from '../theme';
+
+const ORDERS = [
+  { id: '1024', date: '20 вересня', status: 'Готується', items: 'Капучіно 350 мл, Круасан', total: '150 ₴', productId: '1' },
+  { id: '1019', date: '18 вересня', status: 'Виконано', items: 'Латте 250 мл', total: '60 ₴', productId: '2' },
+  { id: '1012', date: '15 вересня', status: 'Виконано', items: 'Американо, Раф 350 мл', total: '115 ₴', productId: '3' },
+];
+
+export default function OrderHistoryScreen({ navigation }) {
+  // "Repeat" jumps to the cart tab and passes the drink id, which the cart screen
+  // turns into a new line item.
+  const repeat = (productId) =>
+    navigation.getParent()?.navigate(STACKS.CART, {
+      screen: SCREENS.CART,
+      params: { addedProductId: productId },
+    });
+
+  return (
+    <FlatList
+      data={ORDERS}
+      keyExtractor={(order) => order.id}
+      contentContainerStyle={styles.content}
+      renderItem={({ item }) => (
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.number}>№ {item.id}</Text>
+              <Text style={styles.date}>{item.date}</Text>
+            </View>
+            <View style={styles.status}>
+              <Text style={styles.statusLabel}>{item.status}</Text>
+            </View>
+          </View>
+
+          <Text style={styles.items}>{item.items}</Text>
+
+          <View style={styles.footer}>
+            <Text style={styles.total}>{item.total}</Text>
+            <CustomButton
+              title="Повторити"
+              variant="secondary"
+              fullWidth={false}
+              style={styles.repeat}
+              onPress={() => repeat(item.productId)}
+            />
+          </View>
+        </View>
+      )}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  content: {
+    padding: spacing.xxl,
+    gap: spacing.md,
+  },
+  card: {
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    backgroundColor: colors.card,
+    gap: spacing.sm,
+    ...shadows.card,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  number: {
+    ...typography.bodyStrong,
+    color: colors.textPrimary,
+  },
+  date: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  status: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.sm,
+    backgroundColor: colors.muted,
+  },
+  statusLabel: {
+    ...typography.label,
+    color: colors.coffee,
+  },
+  items: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.xs,
+  },
+  total: {
+    ...typography.bodyStrong,
+    color: colors.coffee,
+  },
+  repeat: {
+    height: 40,
+    paddingHorizontal: spacing.lg,
+  },
+});

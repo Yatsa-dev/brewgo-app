@@ -1,0 +1,22 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import HomeScreen from '../../screens/HomeScreen';
+import ProductDetailsScreen from '../../screens/ProductDetailsScreen';
+import { SCREENS, TITLES } from '../routes';
+import { stackScreenOptions } from '../screenOptions';
+
+const Stack = createNativeStackNavigator();
+
+export default function MenuStack() {
+  return (
+    <Stack.Navigator screenOptions={stackScreenOptions}>
+      {/* Home draws its own Header component, so the native header is hidden there. */}
+      <Stack.Screen name={SCREENS.HOME} component={HomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen
+        name={SCREENS.PRODUCT_DETAILS}
+        component={ProductDetailsScreen}
+        options={{ title: TITLES[SCREENS.PRODUCT_DETAILS], headerBackTitle: 'Меню' }}
+      />
+    </Stack.Navigator>
+  );
+}
