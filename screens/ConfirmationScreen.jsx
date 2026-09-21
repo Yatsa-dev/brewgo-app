@@ -1,10 +1,14 @@
+import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import CustomButton from '../components/CustomButton';
-import { colors, radii, spacing, typography } from '../theme';
+import { radii, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 export default function ConfirmationScreen({ route, navigation }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { orderNumber, total, time, payment } = route.params ?? {};
 
   const rows = [
@@ -41,7 +45,8 @@ export default function ConfirmationScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   screen: {
     flex: 1,
     alignItems: 'center',

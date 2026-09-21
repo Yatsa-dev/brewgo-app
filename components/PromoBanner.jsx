@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { colors, radii, spacing, typography } from '../theme';
+import { radii, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const ACTIVE_OPACITY = 0.9;
 const BANNER_HEIGHT = 96;
@@ -8,6 +10,8 @@ const DECOR_SIZE = 120;
 
 // overflow: 'hidden' keeps the decorative circle inside the banner.
 export default function PromoBanner({ title, subtitle, actionLabel, onPress }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       <View style={styles.decor} />
@@ -37,7 +41,8 @@ export default function PromoBanner({ title, subtitle, actionLabel, onPress }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     height: BANNER_HEIGHT,
     flexDirection: 'row',
@@ -68,9 +73,11 @@ const styles = StyleSheet.create({
     fontSize: 19,
     color: colors.textOnDark,
   },
+  // Banner background is colors.coffee, which inverts between themes,
+  // so the subtitle follows textOnDark instead of a fixed accent.
   subtitle: {
     ...typography.caption,
-    color: colors.caramel,
+    color: colors.textOnDark,
   },
   action: {
     paddingHorizontal: spacing.lg,

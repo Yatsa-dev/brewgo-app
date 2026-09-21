@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import Badge from './Badge';
-import { colors, sizes, spacing, typography } from '../theme';
+import { sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const ACTIVE_OPACITY = 0.7;
 
@@ -14,6 +16,8 @@ export default function Header({
   onPressLocation,
   onPressCart,
 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       {onPressMenu ? (
@@ -60,7 +64,8 @@ export default function Header({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',

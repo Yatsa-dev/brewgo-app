@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import CustomButton from '../components/CustomButton';
 import { STACKS, SCREENS } from '../navigation/routes';
-import { colors, radii, shadows, spacing, typography } from '../theme';
+import { radii, shadows, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 // drinkId values match ids in the menu API, so "repeat" resolves to a real drink.
 const ORDERS = [
@@ -12,6 +14,8 @@ const ORDERS = [
 ];
 
 export default function OrderHistoryScreen({ navigation }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   // "Repeat" jumps to the cart tab and passes the drink id, which the cart screen
   // resolves through the API into a new line item.
   const repeat = (drinkId) =>
@@ -55,7 +59,8 @@ export default function OrderHistoryScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   content: {
     padding: spacing.xxl,
     gap: spacing.md,

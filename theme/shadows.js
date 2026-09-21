@@ -1,12 +1,12 @@
 import { Platform } from 'react-native';
 
-import { colors } from './colors';
+import { SHADOW_TINT } from './palettes';
 
 // iOS draws shadows with shadow*, Android with elevation.
 const shadow = ({ elevation, opacity, radius, offsetY }) =>
   Platform.select({
     ios: {
-      shadowColor: colors.espresso,
+      shadowColor: SHADOW_TINT,
       shadowOffset: { width: 0, height: offsetY },
       shadowOpacity: opacity,
       shadowRadius: radius,

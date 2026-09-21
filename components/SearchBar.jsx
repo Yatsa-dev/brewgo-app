@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { colors, radii, sizes, spacing, typography } from '../theme';
+import { radii, sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const ACTIVE_OPACITY = 0.7;
 
@@ -12,6 +14,8 @@ export default function SearchBar({
   hints = [],
   onSubmit,
 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const hasText = value.length > 0;
   const showHints = !hasText && hints.length > 0;
 
@@ -60,7 +64,8 @@ export default function SearchBar({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   field: {
     flexDirection: 'row',
     alignItems: 'center',

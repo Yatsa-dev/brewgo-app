@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSelector } from 'react-redux';
 
 import CartStack from './stacks/CartStack';
 import MenuStack from './stacks/MenuStack';
 import ProfileStack from './stacks/ProfileStack';
 import SearchStack from './stacks/SearchStack';
 import { STACKS, TAB_ICONS, TAB_LABELS } from './routes';
-import { tabNavigatorOptions } from './screenOptions';
-import { cartItems } from '../data/products';
+import { createTabNavigatorOptions } from './screenOptions';
+import { useTheme } from '../context/ThemeContext';
+import { selectCartCount } from '../store/cartSlice';
 
 const Tab = createBottomTabNavigator();
 
@@ -22,8 +24,12 @@ const tabIcon = (routeName) => ({ focused, color, size }) => (
 );
 
 export default function TabNavigator() {
+  const { colors } = useTheme();
+  // The badge reads the store, so adding a drink anywhere updates the tab instantly.
+  const cartCount = useSelector(selectCartCount);
+
   return (
-    <Tab.Navigator screenOptions={tabNavigatorOptions}>
+    <Tab.Navigator screenOptions={createTabNavigatorOptions(colors)}>
       <Tab.Screen
         name={STACKS.MENU}
         component={MenuStack}
@@ -40,7 +46,7 @@ export default function TabNavigator() {
         options={{
           title: TAB_LABELS[STACKS.CART],
           tabBarIcon: tabIcon(STACKS.CART),
-          tabBarBadge: cartItems.length || undefined,
+          tabBarBadge: cartCount || undefined,
         }}
       />
       <Tab.Screen

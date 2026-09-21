@@ -1,11 +1,15 @@
+import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { DrawerActions } from '@react-navigation/native';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 import { SCREENS } from '../navigation/routes';
-import { colors, radii, sizes, spacing, typography } from '../theme';
+import { radii, sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 export default function ProfileScreen({ navigation }) {
+  const { colors, isDark, toggleTheme } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const rows = [
     { label: 'Мої замовлення', icon: 'receipt-outline', onPress: () => navigation.navigate(SCREENS.ORDER_HISTORY) },
     { label: 'Підтримка', icon: 'help-buoy-outline', onPress: () => navigation.dispatch(DrawerActions.jumpTo(SCREENS.SUPPORT)) },
@@ -30,6 +34,27 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.loyaltyHint}>Девʼятий напій у подарунок</Text>
       </View>
 
+      {/* The switch is the only control that writes to the theme context;
+          every other component just reads the palette from it. */}
+      <View style={styles.themeRow}>
+        <Ionicons
+          name={isDark ? 'moon' : 'sunny'}
+          size={sizes.iconMd}
+          color={colors.coffee}
+        />
+        <View style={styles.themeText}>
+          <Text style={styles.rowLabel}>Темна тема</Text>
+          <Text style={styles.themeHint}>{isDark ? 'Увімкнено' : 'Вимкнено'}</Text>
+        </View>
+        <Switch
+          value={isDark}
+          onValueChange={toggleTheme}
+          trackColor={{ false: colors.border, true: colors.coffee }}
+          thumbColor={colors.card}
+          accessibilityLabel="Перемикач темної теми"
+        />
+      </View>
+
       <View style={styles.card}>
         {rows.map((row, index) => (
           <TouchableOpacity
@@ -49,7 +74,8 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   content: {
     padding: spacing.xxl,
     gap: spacing.lg,
@@ -85,9 +111,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.coffee,
     gap: spacing.xs,
   },
+  // The loyalty card sits on colors.coffee, which is dark in the light theme and
+  // light in the dark one. textOnDark flips with it, so the text stays readable.
   loyaltyLabel: {
     ...typography.label,
-    color: colors.caramel,
+    color: colors.textOnDark,
   },
   loyaltyValue: {
     ...typography.heading,
@@ -95,12 +123,27 @@ const styles = StyleSheet.create({
   },
   loyaltyHint: {
     ...typography.caption,
-    color: colors.caramel,
+    color: colors.textOnDark,
   },
   card: {
     borderRadius: radii.lg,
     backgroundColor: colors.card,
     paddingHorizontal: spacing.lg,
+  },
+  themeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    backgroundColor: colors.card,
+  },
+  themeText: {
+    flex: 1,
+  },
+  themeHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   row: {
     flexDirection: 'row',

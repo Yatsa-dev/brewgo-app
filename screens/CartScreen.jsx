@@ -1,25 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
 import CartItem from '../components/CartItem';
 import CustomButton from '../components/CustomButton';
 import { CATEGORIES, fetchDrinkById } from '../api/coffee';
-import { cartItems as initialItems } from '../data/products';
+import { useTheme } from '../context/ThemeContext';
 import { SCREENS } from '../navigation/routes';
-import { colors, radii, spacing, typography } from '../theme';
-
-const priceToNumber = (price) => Number(String(price).replace(/[^\d]/g, '')) || 0;
+import {
+  addItem,
+  clearCart,
+  removeItem,
+  selectCartItems,
+  selectCartTotal,
+  updateQuantity,
+} from '../store/cartSlice';
+import { radii, spacing, typography } from '../theme';
 
 export default function CartScreen({ route, navigation }) {
-  const [items, setItems] = useState(initialItems);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const items = useSelector(selectCartItems);
+  const total = useSelector(selectCartTotal);
+  const dispatch = useDispatch();
+
   const [isAdding, setIsAdding] = useState(false);
 
   const addedDrinkId = route.params?.addedDrinkId;
   const category = route.params?.category ?? CATEGORIES[0].id;
 
-  // Other screens hand over only the drink id, so the cart loads the rest itself.
-  // The param is cleared right after it is handled, otherwise returning to this
-  // tab would add the same drink again.
+  // The order history hands over only a drink id, so the cart resolves it through
+  // the API and then dispatches. The param is cleared right after it is handled,
+  // otherwise returning to this tab would add the same drink again.
   useEffect(() => {
     if (!addedDrinkId) return;
     let active = true;
@@ -28,30 +41,9 @@ export default function CartScreen({ route, navigation }) {
       setIsAdding(true);
       try {
         const drink = await fetchDrinkById(addedDrinkId, category);
-        if (!active || !drink) return;
-
-        setItems((current) => {
-          const existing = current.find((item) => item.drinkId === drink.id);
-          if (existing) {
-            return current.map((item) =>
-              item.drinkId === drink.id ? { ...item, quantity: item.quantity + 1 } : item
-            );
-          }
-          return [
-            ...current,
-            {
-              id: `${drink.id}-${Date.now()}`,
-              drinkId: drink.id,
-              title: drink.title,
-              options: drink.volume,
-              price: drink.price,
-              quantity: 1,
-              imageUrl: drink.imageUrl,
-            },
-          ];
-        });
+        if (active && drink) dispatch(addItem(drink));
       } catch {
-        // A failed add must not break the cart: the existing items stay as they are.
+        // A failed add must not break the cart: existing items stay as they are.
       } finally {
         if (active) setIsAdding(false);
         navigation.setParams({ addedDrinkId: undefined });
@@ -62,12 +54,7 @@ export default function CartScreen({ route, navigation }) {
     return () => {
       active = false;
     };
-  }, [addedDrinkId, category, navigation]);
-
-  const total = items.reduce((sum, item) => sum + priceToNumber(item.price) * item.quantity, 0);
-
-  const changeQuantity = (id, quantity) =>
-    setItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)));
+  }, [addedDrinkId, category, dispatch, navigation]);
 
   if (items.length === 0 && !isAdding) {
     return (
@@ -88,7 +75,9 @@ export default function CartScreen({ route, navigation }) {
           price={item.price}
           quantity={item.quantity}
           imageUrl={item.imageUrl}
-          onChangeQuantity={(quantity) => changeQuantity(item.id, quantity)}
+          // Line id travels as a prop, so the component itself stays free of store logic.
+          onChangeQuantity={(quantity) => dispatch(updateQuantity({ id: item.id, quantity }))}
+          onRemove={() => dispatch(removeItem(item.id))}
         />
       ))}
 
@@ -114,67 +103,69 @@ export default function CartScreen({ route, navigation }) {
         title="Перейти до оплати"
         onPress={() => navigation.navigate(SCREENS.CHECKOUT, { total })}
       />
+      <CustomButton title="Очистити кошик" variant="ghost" onPress={() => dispatch(clearCart())} />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    padding: spacing.xxl,
-    gap: spacing.md,
-  },
-  adding: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-  },
-  addingText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  summary: {
-    padding: spacing.lg,
-    borderRadius: radii.lg,
-    backgroundColor: colors.card,
-    gap: spacing.sm,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  summaryLabel: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-  summaryValue: {
-    ...typography.bodyStrong,
-    color: colors.textPrimary,
-  },
-  totalLabel: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-  },
-  totalValue: {
-    ...typography.subheading,
-    color: colors.coffee,
-  },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    padding: spacing.xxl,
-  },
-  emptyTitle: {
-    ...typography.heading,
-    color: colors.textPrimary,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-});
+const createStyles = (colors) =>
+  StyleSheet.create({
+    content: {
+      padding: spacing.xxl,
+      gap: spacing.md,
+    },
+    adding: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.sm,
+    },
+    addingText: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    summary: {
+      padding: spacing.lg,
+      borderRadius: radii.lg,
+      backgroundColor: colors.card,
+      gap: spacing.sm,
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    summaryLabel: {
+      ...typography.body,
+      color: colors.textSecondary,
+    },
+    summaryValue: {
+      ...typography.bodyStrong,
+      color: colors.textPrimary,
+    },
+    totalLabel: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    totalValue: {
+      ...typography.subheading,
+      color: colors.coffee,
+    },
+    empty: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      padding: spacing.xxl,
+    },
+    emptyTitle: {
+      ...typography.heading,
+      color: colors.textPrimary,
+    },
+    emptyText: {
+      ...typography.body,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+  });

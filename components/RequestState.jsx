@@ -1,11 +1,15 @@
+import { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import CustomButton from './CustomButton';
-import { colors, spacing, typography } from '../theme';
+import { spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 // Shared loading and error view so every screen that talks to the API
 // reports progress and failures the same way.
 export default function RequestState({ status, error, onRetry, loadingText = 'Завантажуємо меню…' }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   if (status === 'loading') {
     return (
       <View style={styles.container}>
@@ -30,7 +34,8 @@ export default function RequestState({ status, error, onRetry, loadingText = 'З
   return null;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
