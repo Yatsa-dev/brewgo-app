@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import Collapsible from '../components/Collapsible';
 import CustomButton from '../components/CustomButton';
 import QuantityStepper from '../components/QuantityStepper';
 import RequestState from '../components/RequestState';
@@ -88,10 +89,15 @@ export default function ProductDetailsScreen({ route, navigation }) {
         <Text style={styles.price}>{drink.price}</Text>
       </View>
 
-      {drink.description ? <Text style={styles.description}>{drink.description}</Text> : null}
-
-      {drink.ingredients.length > 0 ? (
-        <Text style={styles.ingredients}>Склад: {drink.ingredients.join(', ')}</Text>
+      {drink.description || drink.ingredients.length > 0 ? (
+        <Collapsible title="Опис і склад">
+          {drink.description ? (
+            <Text style={styles.description}>{drink.description}</Text>
+          ) : null}
+          {drink.ingredients.length > 0 ? (
+            <Text style={styles.ingredients}>Склад: {drink.ingredients.join(', ')}</Text>
+          ) : null}
+        </Collapsible>
       ) : null}
 
       <Text style={styles.label}>РОЗМІР</Text>

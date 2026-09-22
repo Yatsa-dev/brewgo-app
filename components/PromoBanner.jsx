@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { radii, spacing, typography } from '../theme';
@@ -9,7 +9,7 @@ const BANNER_HEIGHT = 96;
 const DECOR_SIZE = 120;
 
 // overflow: 'hidden' keeps the decorative circle inside the banner.
-export default function PromoBanner({ title, subtitle, actionLabel, onPress }) {
+function PromoBanner({ title, subtitle, actionLabel, onPress }) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   return (
@@ -40,6 +40,8 @@ export default function PromoBanner({ title, subtitle, actionLabel, onPress }) {
     </View>
   );
 }
+
+export default memo(PromoBanner);
 
 const createStyles = (colors) =>
   StyleSheet.create({

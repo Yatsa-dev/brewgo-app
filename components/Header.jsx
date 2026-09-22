@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { memo, useMemo } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import Badge from './Badge';
@@ -8,7 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 
 const ACTIVE_OPACITY = 0.7;
 
-export default function Header({
+function Header({
   label = 'ЗАБРАТИ В',
   title,
   cartCount = 0,
@@ -63,6 +63,8 @@ export default function Header({
     </View>
   );
 }
+
+export default memo(Header);
 
 const createStyles = (colors) =>
   StyleSheet.create({

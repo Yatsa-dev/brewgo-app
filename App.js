@@ -3,6 +3,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import RenderStatsOverlay from './dev/RenderStatsOverlay';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import RootNavigator from './navigation/RootNavigator';
 import { store } from './store';
@@ -16,6 +17,8 @@ function ThemedApp() {
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <RootNavigator />
+      {/* Render counters for the optimisation report; stripped outside development. */}
+      {__DEV__ ? <RenderStatsOverlay /> : null}
     </>
   );
 }

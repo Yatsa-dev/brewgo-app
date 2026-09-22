@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -26,6 +26,15 @@ export default function CartScreen({ route, navigation }) {
   const dispatch = useDispatch();
 
   const [isAdding, setIsAdding] = useState(false);
+
+  // One callback per operation for the whole list: every row receives the same
+  // reference, so a change in one line no longer re-renders the others.
+  const changeQuantity = useCallback(
+    (id, quantity) => dispatch(updateQuantity({ id, quantity })),
+    [dispatch]
+  );
+  const remove = useCallback((id) => dispatch(removeItem(id)), [dispatch]);
+  const clear = useCallback(() => dispatch(clearCart()), [dispatch]);
 
   const addedDrinkId = route.params?.addedDrinkId;
   const category = route.params?.category ?? CATEGORIES[0].id;
@@ -70,14 +79,15 @@ export default function CartScreen({ route, navigation }) {
       {items.map((item) => (
         <CartItem
           key={item.id}
+          // Line id travels as a prop, so the component itself stays free of store logic.
+          id={item.id}
           title={item.title}
           options={item.options}
           price={item.price}
           quantity={item.quantity}
           imageUrl={item.imageUrl}
-          // Line id travels as a prop, so the component itself stays free of store logic.
-          onChangeQuantity={(quantity) => dispatch(updateQuantity({ id: item.id, quantity }))}
-          onRemove={() => dispatch(removeItem(item.id))}
+          onChangeQuantity={changeQuantity}
+          onRemove={remove}
         />
       ))}
 
@@ -103,7 +113,7 @@ export default function CartScreen({ route, navigation }) {
         title="Перейти до оплати"
         onPress={() => navigation.navigate(SCREENS.CHECKOUT, { total })}
       />
-      <CustomButton title="Очистити кошик" variant="ghost" onPress={() => dispatch(clearCart())} />
+      <CustomButton title="Очистити кошик" variant="ghost" onPress={clear} />
     </ScrollView>
   );
 }

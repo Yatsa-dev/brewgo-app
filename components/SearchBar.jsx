@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { radii, sizes, spacing, typography } from '../theme';
