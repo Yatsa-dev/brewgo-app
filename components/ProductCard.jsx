@@ -1,39 +1,42 @@
-import { useMemo } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { memo, useCallback, useMemo } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { radii, shadows, sizes, spacing, typography } from '../theme';
+import { useRenderLog } from '../hooks/useRenderLog';
 import { useTheme } from '../context/ThemeContext';
 
 const ACTIVE_OPACITY = 0.9;
 const IMAGE_RATIO = 0.62; // image height relative to card width
 
-export default function ProductCard({
-  title,
-  volume,
-  price,
-  rating,
-  imageUrl,
-  width,
-  onPress,
-  onAdd,
-}) {
+// The card takes an id and hands it back to the screen, so the whole grid can
+// share one callback instead of getting a fresh arrow per item on every render.
+function ProductCard({ id, title, volume, price, rating, imageUrl, width, onPress, onAdd }) {
+  useRenderLog('ProductCard');
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const handlePress = useCallback(() => onPress?.(id), [id, onPress]);
+  const handleAdd = useCallback(() => onAdd?.(id), [id, onAdd]);
+
+  // Both styles mix a sheet entry with a runtime size, so they are composed once
+  // per width change instead of allocating a new array on every render.
+  const containerStyle = useMemo(() => [styles.container, { width }], [styles, width]);
+  const imageStyle = useMemo(
+    () => [styles.image, { height: width * IMAGE_RATIO }],
+    [styles, width]
+  );
+
   return (
     <TouchableOpacity
-      style={[styles.container, { width }]}
-      onPress={onPress}
+      style={containerStyle}
+      onPress={handlePress}
       activeOpacity={ACTIVE_OPACITY}
       accessibilityRole="button"
       accessibilityLabel={`${title}, ${price}`}
     >
       <View style={styles.imageWrapper}>
-        <Image
-          source={{ uri: imageUrl }}
-          style={[styles.image, { height: width * IMAGE_RATIO }]}
-          resizeMode="cover"
-        />
+        <Image source={{ uri: imageUrl }} style={imageStyle} resizeMode="cover" />
         {rating ? (
           <View style={styles.rating}>
             <Ionicons name="star" size={12} color={colors.caramel} />
@@ -52,7 +55,7 @@ export default function ProductCard({
           <Text style={styles.price}>{price}</Text>
           <TouchableOpacity
             style={styles.addButton}
-            onPress={onAdd}
+            onPress={handleAdd}
             activeOpacity={ACTIVE_OPACITY}
             accessibilityRole="button"
             accessibilityLabel={`Додати ${title} у кошик`}
@@ -64,6 +67,8 @@ export default function ProductCard({
     </TouchableOpacity>
   );
 }
+
+export default memo(ProductCard);
 
 const createStyles = (colors) =>
   StyleSheet.create({

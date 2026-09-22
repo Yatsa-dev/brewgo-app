@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { memo, useCallback, useMemo } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { radii, spacing, typography } from '../theme';
@@ -9,17 +9,24 @@ const ACTIVE_OPACITY = 0.7;
 const STEPPER_HEIGHT = 30;
 const BUTTON_WIDTH = 30;
 
-export default function QuantityStepper({ value = 1, min = 1, max = 99, onChange }) {
+function QuantityStepper({ value = 1, min = 1, max = 99, onChange }) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const canDecrease = value > min;
   const canIncrease = value < max;
 
+  const decrease = useCallback(() => {
+    if (canDecrease) onChange?.(value - 1);
+  }, [canDecrease, onChange, value]);
+  const increase = useCallback(() => {
+    if (canIncrease) onChange?.(value + 1);
+  }, [canIncrease, onChange, value]);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => canDecrease && onChange?.(value - 1)}
+        onPress={decrease}
         disabled={!canDecrease}
         activeOpacity={ACTIVE_OPACITY}
         accessibilityRole="button"
@@ -36,7 +43,7 @@ export default function QuantityStepper({ value = 1, min = 1, max = 99, onChange
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => canIncrease && onChange?.(value + 1)}
+        onPress={increase}
         disabled={!canIncrease}
         activeOpacity={ACTIVE_OPACITY}
         accessibilityRole="button"
@@ -47,6 +54,8 @@ export default function QuantityStepper({ value = 1, min = 1, max = 99, onChange
     </View>
   );
 }
+
+export default memo(QuantityStepper);
 
 const createStyles = (colors) =>
   StyleSheet.create({

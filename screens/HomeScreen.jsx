@@ -1,5 +1,5 @@
 import { DrawerActions } from '@react-navigation/native';
-import { useState, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import CategoryTabs from '../components/CategoryTabs';
@@ -8,16 +8,19 @@ import ProductCard from '../components/ProductCard';
 import PromoBanner from '../components/PromoBanner';
 import RequestState from '../components/RequestState';
 import SearchBar from '../components/SearchBar';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { CATEGORIES } from '../api/coffee';
 import { searchHints } from '../data/products';
-import { selectCartCount } from '../store/cartSlice';
+import { addItem, selectCartCount } from '../store/cartSlice';
 import { useCardWidth } from '../hooks/useCardWidth';
 import { STATUS, useCoffeeMenu } from '../hooks/useCoffeeMenu';
 import { SCREENS, STACKS } from '../navigation/routes';
 import { spacing, typography } from '../theme';
 import { useTheme } from '../context/ThemeContext';
+
+// Module scope keeps the reference stable across renders of the screen.
+const keyExtractor = (item) => item.id;
 
 export default function HomeScreen({ navigation }) {
   const { colors } = useTheme();
@@ -28,30 +31,75 @@ export default function HomeScreen({ navigation }) {
 
   const { status, drinks, error, reload } = useCoffeeMenu(category);
   const cartCount = useSelector(selectCartCount);
+  const dispatch = useDispatch();
 
-  const visibleDrinks = drinks.filter((item) =>
-    item.title.toLowerCase().includes(query.trim().toLowerCase())
-  );
+  // Filtering runs over every drink, so it is tied to the query and the fetched
+  // list rather than repeated on each render of the screen.
+  const visibleDrinks = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return drinks;
+    return drinks.filter((item) => item.title.toLowerCase().includes(needle));
+  }, [drinks, query]);
 
   // The details screen loads the drink itself, so only the id and its category travel.
-  const openDrink = (drinkId) =>
-    navigation.navigate(SCREENS.PRODUCT_DETAILS, { drinkId, category });
+  const openDrink = useCallback(
+    (drinkId) => navigation.navigate(SCREENS.PRODUCT_DETAILS, { drinkId, category }),
+    [navigation, category]
+  );
 
-  const header = (
-    <View style={styles.section}>
-      <Header
-        title="Січових Стрільців, 12"
-        cartCount={cartCount}
-        onPressMenu={() => navigation.dispatch(DrawerActions.openDrawer())}
-        onPressCart={() => navigation.getParent()?.navigate(STACKS.CART)}
+  // The grid already holds the full drink, so the plus button adds it straight
+  // to the store instead of routing through the details screen.
+  const addToCart = useCallback(
+    (drinkId) => {
+      const drink = drinks.find((item) => item.id === drinkId);
+      if (drink) dispatch(addItem(drink));
+    },
+    [dispatch, drinks]
+  );
+
+  const openMenu = useCallback(
+    () => navigation.dispatch(DrawerActions.openDrawer()),
+    [navigation]
+  );
+  const openCart = useCallback(
+    () => navigation.getParent()?.navigate(STACKS.CART),
+    [navigation]
+  );
+
+  const renderItem = useCallback(
+    ({ item }) => (
+      <ProductCard
+        id={item.id}
+        title={item.title}
+        volume={item.volume}
+        price={item.price}
+        imageUrl={item.imageUrl}
+        width={cardWidth}
+        onPress={openDrink}
+        onAdd={addToCart}
       />
-      <SearchBar value={query} onChangeText={setQuery} hints={searchHints} />
-      <CategoryTabs categories={CATEGORIES} activeId={category} onChange={setCategory} />
-      <PromoBanner title="−20% на раф" subtitle="До кінця тижня" actionLabel="Дивитись" />
-      {status === STATUS.SUCCESS ? (
-        <Text style={styles.sectionTitle}>Меню · {visibleDrinks.length}</Text>
-      ) : null}
-    </View>
+    ),
+    [cardWidth, openDrink, addToCart]
+  );
+
+  const header = useMemo(
+    () => (
+      <View style={styles.section}>
+        <Header
+          title="Січових Стрільців, 12"
+          cartCount={cartCount}
+          onPressMenu={openMenu}
+          onPressCart={openCart}
+        />
+        <SearchBar value={query} onChangeText={setQuery} hints={searchHints} />
+        <CategoryTabs categories={CATEGORIES} activeId={category} onChange={setCategory} />
+        <PromoBanner title="−20% на раф" subtitle="До кінця тижня" actionLabel="Дивитись" />
+        {status === STATUS.SUCCESS ? (
+          <Text style={styles.sectionTitle}>Меню · {visibleDrinks.length}</Text>
+        ) : null}
+      </View>
+    ),
+    [styles, cartCount, openMenu, openCart, query, category, status, visibleDrinks.length]
   );
 
   return (
@@ -60,7 +108,7 @@ export default function HomeScreen({ navigation }) {
       // so the key forces a remount after rotation.
       key={columns}
       data={status === STATUS.SUCCESS ? visibleDrinks : []}
-      keyExtractor={(item) => item.id}
+      keyExtractor={keyExtractor}
       numColumns={columns}
       columnWrapperStyle={columns > 1 ? styles.row : undefined}
       contentContainerStyle={styles.content}
@@ -72,17 +120,7 @@ export default function HomeScreen({ navigation }) {
           <RequestState status={status} error={error} onRetry={reload} />
         )
       }
-      renderItem={({ item }) => (
-        <ProductCard
-          title={item.title}
-          volume={item.volume}
-          price={item.price}
-          imageUrl={item.imageUrl}
-          width={cardWidth}
-          onPress={() => openDrink(item.id)}
-          onAdd={() => openDrink(item.id)}
-        />
-      )}
+      renderItem={renderItem}
     />
   );
 }

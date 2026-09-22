@@ -28,5 +28,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "source-map-explorer": "^2.5.3"
+  }
 }

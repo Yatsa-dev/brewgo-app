@@ -1,12 +1,25 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { memo, useCallback, useMemo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, {
+  FadeInDown,
+  FadeOutRight,
+  LinearTransition,
+} from 'react-native-reanimated';
 
 import QuantityStepper from './QuantityStepper';
 import { radii, shadows, sizes, spacing, typography } from '../theme';
+import { useRenderLog } from '../hooks/useRenderLog';
 import { useTheme } from '../context/ThemeContext';
 
-export default function CartItem({
+const ENTER_DURATION = 260;
+const EXIT_DURATION = 200;
+const LAYOUT_DURATION = 240;
+
+// Like ProductCard, the row reports its own id back so the cart screen keeps one
+// dispatch callback for the whole list.
+function CartItem({
+  id,
   title,
   options,
   price,
@@ -15,10 +28,26 @@ export default function CartItem({
   onChangeQuantity,
   onRemove,
 }) {
+  useRenderLog('CartItem');
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const handleQuantity = useCallback(
+    (next) => onChangeQuantity?.(id, next),
+    [id, onChangeQuantity]
+  );
+  const handleRemove = useCallback(() => onRemove?.(id), [id, onRemove]);
+
   return (
-    <View style={styles.container}>
+    // Entering / exiting make an added or removed line visible, and the layout
+    // transition slides the remaining rows into their new place instead of
+    // snapping them.
+    <Animated.View
+      style={styles.container}
+      entering={FadeInDown.duration(ENTER_DURATION)}
+      exiting={FadeOutRight.duration(EXIT_DURATION)}
+      layout={LinearTransition.duration(LAYOUT_DURATION)}
+    >
       <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
 
       <View style={styles.body}>
@@ -30,14 +59,14 @@ export default function CartItem({
             {options}
           </Text>
         ) : null}
-        <QuantityStepper value={quantity} onChange={onChangeQuantity} />
+        <QuantityStepper value={quantity} onChange={handleQuantity} />
       </View>
 
       <View style={styles.trailing}>
         <Text style={styles.price}>{price}</Text>
         {onRemove ? (
           <TouchableOpacity
-            onPress={onRemove}
+            onPress={handleRemove}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel={`Видалити ${title} з кошика`}
@@ -46,9 +75,11 @@ export default function CartItem({
           </TouchableOpacity>
         ) : null}
       </View>
-    </View>
+    </Animated.View>
   );
 }
+
+export default memo(CartItem);
 
 const createStyles = (colors) =>
   StyleSheet.create({
