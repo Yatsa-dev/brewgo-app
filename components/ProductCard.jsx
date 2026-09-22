@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { colors, radii, shadows, sizes, spacing, typography } from '../theme';
+import { radii, shadows, sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const ACTIVE_OPACITY = 0.9;
 const IMAGE_RATIO = 0.62; // image height relative to card width
@@ -16,6 +18,8 @@ export default function ProductCard({
   onPress,
   onAdd,
 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <TouchableOpacity
       style={[styles.container, { width }]}
@@ -61,7 +65,8 @@ export default function ProductCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     backgroundColor: colors.card,
     borderRadius: radii.lg,

@@ -3,7 +3,8 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import TabNavigator from './TabNavigator';
 import { DRAWER, SCREENS, TITLES } from './routes';
-import { drawerNavigatorOptions, stackScreenOptions } from './screenOptions';
+import { createDrawerNavigatorOptions, createStackScreenOptions } from './screenOptions';
+import { useTheme } from '../context/ThemeContext';
 import InfoScreen from '../screens/InfoScreen';
 import { sizes } from '../theme';
 
@@ -37,8 +38,10 @@ const ABOUT_PARAMS = {
 };
 
 export default function DrawerNavigator() {
+  const { colors } = useTheme();
+  const stackScreenOptions = createStackScreenOptions(colors);
   return (
-    <Drawer.Navigator screenOptions={drawerNavigatorOptions}>
+    <Drawer.Navigator screenOptions={createDrawerNavigatorOptions(colors)}>
       <Drawer.Screen
         name={DRAWER.TABS}
         component={TabNavigator}

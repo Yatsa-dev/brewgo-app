@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import CustomButton from '../components/CustomButton';
 import { SCREENS } from '../navigation/routes';
-import { colors, radii, spacing, typography } from '../theme';
+import { radii, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const PICKUP_TIMES = ['Якнайшвидше · 10 хв', '12:30', '13:00'];
 const PAYMENTS = ['Apple Pay', 'Картка •••• 1234', 'Готівка в закладі'];
 
 export default function CheckoutScreen({ route, navigation }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const total = route.params?.total ?? 0;
   const [time, setTime] = useState(PICKUP_TIMES[0]);
   const [payment, setPayment] = useState(PAYMENTS[0]);
@@ -64,7 +67,8 @@ export default function CheckoutScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   content: {
     padding: spacing.xxl,
     gap: spacing.md,

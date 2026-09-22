@@ -1,5 +1,5 @@
 import { DrawerActions } from '@react-navigation/native';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import CategoryTabs from '../components/CategoryTabs';
@@ -8,19 +8,26 @@ import ProductCard from '../components/ProductCard';
 import PromoBanner from '../components/PromoBanner';
 import RequestState from '../components/RequestState';
 import SearchBar from '../components/SearchBar';
+import { useSelector } from 'react-redux';
+
 import { CATEGORIES } from '../api/coffee';
-import { cartItems, searchHints } from '../data/products';
+import { searchHints } from '../data/products';
+import { selectCartCount } from '../store/cartSlice';
 import { useCardWidth } from '../hooks/useCardWidth';
 import { STATUS, useCoffeeMenu } from '../hooks/useCoffeeMenu';
 import { SCREENS, STACKS } from '../navigation/routes';
-import { colors, spacing, typography } from '../theme';
+import { spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 export default function HomeScreen({ navigation }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0].id);
   const { cardWidth, columns } = useCardWidth();
 
   const { status, drinks, error, reload } = useCoffeeMenu(category);
+  const cartCount = useSelector(selectCartCount);
 
   const visibleDrinks = drinks.filter((item) =>
     item.title.toLowerCase().includes(query.trim().toLowerCase())
@@ -34,7 +41,7 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.section}>
       <Header
         title="Січових Стрільців, 12"
-        cartCount={cartItems.length}
+        cartCount={cartCount}
         onPressMenu={() => navigation.dispatch(DrawerActions.openDrawer())}
         onPressCart={() => navigation.getParent()?.navigate(STACKS.CART)}
       />
@@ -80,7 +87,8 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   content: {
     paddingHorizontal: spacing.xxl,
     paddingBottom: spacing.xxxl,

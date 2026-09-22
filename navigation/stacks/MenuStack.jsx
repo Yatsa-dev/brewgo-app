@@ -3,13 +3,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../../screens/HomeScreen';
 import ProductDetailsScreen from '../../screens/ProductDetailsScreen';
 import { SCREENS, TITLES } from '../routes';
-import { stackScreenOptions } from '../screenOptions';
+import { createStackScreenOptions } from '../screenOptions';
+import { useTheme } from '../../context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function MenuStack() {
+  const { colors } = useTheme();
   return (
-    <Stack.Navigator screenOptions={stackScreenOptions}>
+    <Stack.Navigator screenOptions={createStackScreenOptions(colors)}>
       {/* Home draws its own Header component, so the native header is hidden there. */}
       <Stack.Screen name={SCREENS.HOME} component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen

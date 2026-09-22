@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
-import { colors, radii, spacing, typography } from '../theme';
+import { radii, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const ACTIVE_OPACITY = 0.8;
 const TAB_HEIGHT = 36;
@@ -8,6 +10,8 @@ const TAB_HEIGHT = 36;
 // Chip width follows its label: on a narrow screen the extra categories
 // scroll out of view instead of shrinking.
 export default function CategoryTabs({ categories = [], activeId, onChange }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <ScrollView
       horizontal
@@ -36,7 +40,8 @@ export default function CategoryTabs({ categories = [], activeId, onChange }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',

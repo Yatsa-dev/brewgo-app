@@ -1,9 +1,13 @@
+import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
-import { colors, radii, sizes, spacing, typography } from '../theme';
+import { radii, sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
-const VARIANT_STYLES = {
+// Variants depend on the palette, so the map is built per theme rather than
+// living as a module constant.
+const createVariantStyles = (colors) => ({
   primary: {
     container: { backgroundColor: colors.espresso },
     label: { color: colors.textOnDark },
@@ -23,7 +27,7 @@ const VARIANT_STYLES = {
     label: { color: colors.textSecondary },
     content: colors.textSecondary,
   },
-};
+});
 
 const DISABLED_OPACITY = 0.45;
 const ACTIVE_OPACITY = 0.8;
@@ -38,7 +42,10 @@ export default function CustomButton({
   fullWidth = true,
   style,
 }) {
-  const variantStyle = VARIANT_STYLES[variant] ?? VARIANT_STYLES.primary;
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const variantStyles = useMemo(() => createVariantStyles(colors), [colors]);
+  const variantStyle = variantStyles[variant] ?? variantStyles.primary;
   const icon = iconName ? (
     <Ionicons name={iconName} size={sizes.iconMd} color={variantStyle.content} />
   ) : null;
@@ -67,7 +74,8 @@ export default function CustomButton({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',

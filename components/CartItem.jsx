@@ -1,7 +1,10 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useMemo } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import QuantityStepper from './QuantityStepper';
-import { colors, radii, shadows, sizes, spacing, typography } from '../theme';
+import { radii, shadows, sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 export default function CartItem({
   title,
@@ -10,7 +13,10 @@ export default function CartItem({
   quantity = 1,
   imageUrl,
   onChangeQuantity,
+  onRemove,
 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
@@ -27,12 +33,25 @@ export default function CartItem({
         <QuantityStepper value={quantity} onChange={onChangeQuantity} />
       </View>
 
-      <Text style={styles.price}>{price}</Text>
+      <View style={styles.trailing}>
+        <Text style={styles.price}>{price}</Text>
+        {onRemove ? (
+          <TouchableOpacity
+            onPress={onRemove}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Видалити ${title} з кошика`}
+          >
+            <Ionicons name="trash-outline" size={sizes.iconMd} color={colors.textSecondary} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -60,6 +79,10 @@ const styles = StyleSheet.create({
   options: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  trailing: {
+    alignItems: 'flex-end',
+    gap: spacing.sm,
   },
   price: {
     ...typography.bodyStrong,

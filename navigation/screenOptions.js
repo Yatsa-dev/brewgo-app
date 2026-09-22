@@ -1,9 +1,10 @@
 import { Platform } from 'react-native';
 
-import { colors, spacing, typography } from '../theme';
+import { spacing, typography } from '../theme';
 
-// Shared look for every stack header so navigation matches the Figma design.
-export const stackScreenOptions = {
+// Options depend on the active palette, so each one is a factory instead of a
+// constant object: navigators call it with the colours they get from the theme.
+export const createStackScreenOptions = (colors) => ({
   headerStyle: { backgroundColor: colors.cream },
   headerTintColor: colors.coffee,
   headerTitleStyle: { ...typography.subheading, color: colors.textPrimary },
@@ -12,9 +13,9 @@ export const stackScreenOptions = {
   contentStyle: { backgroundColor: colors.cream },
   // iOS gets the native swipe-back gesture; on Android the hardware button covers it.
   gestureEnabled: Platform.select({ ios: true, android: false, default: true }),
-};
+});
 
-export const tabNavigatorOptions = {
+export const createTabNavigatorOptions = (colors) => ({
   headerShown: false,
   tabBarActiveTintColor: colors.coffee,
   tabBarInactiveTintColor: colors.textSecondary,
@@ -28,9 +29,9 @@ export const tabNavigatorOptions = {
     paddingBottom: Platform.select({ ios: spacing.xxl, android: spacing.md, default: spacing.md }),
   },
   tabBarLabelStyle: { ...typography.label, marginTop: 0, marginBottom: 0 },
-};
+});
 
-export const drawerNavigatorOptions = {
+export const createDrawerNavigatorOptions = (colors) => ({
   headerShown: false,
   drawerType: 'front',
   drawerActiveTintColor: colors.coffee,
@@ -38,4 +39,4 @@ export const drawerNavigatorOptions = {
   drawerActiveBackgroundColor: colors.muted,
   drawerStyle: { backgroundColor: colors.cream, width: 280 },
   drawerLabelStyle: { ...typography.bodyStrong },
-};
+});

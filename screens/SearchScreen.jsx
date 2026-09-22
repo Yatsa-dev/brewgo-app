@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import CategoryTabs from '../components/CategoryTabs';
@@ -8,9 +8,12 @@ import { CATEGORIES } from '../api/coffee';
 import { searchHints } from '../data/products';
 import { STATUS, useCoffeeMenu } from '../hooks/useCoffeeMenu';
 import { SCREENS } from '../navigation/routes';
-import { colors, radii, shadows, sizes, spacing, typography } from '../theme';
+import { radii, shadows, sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 export default function SearchScreen({ navigation }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0].id);
 
@@ -68,7 +71,8 @@ export default function SearchScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   screen: { flex: 1 },
   controls: {
     paddingHorizontal: spacing.xxl,

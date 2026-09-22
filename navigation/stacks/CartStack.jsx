@@ -4,13 +4,15 @@ import CartScreen from '../../screens/CartScreen';
 import CheckoutScreen from '../../screens/CheckoutScreen';
 import ConfirmationScreen from '../../screens/ConfirmationScreen';
 import { SCREENS, TITLES } from '../routes';
-import { stackScreenOptions } from '../screenOptions';
+import { createStackScreenOptions } from '../screenOptions';
+import { useTheme } from '../../context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function CartStack() {
+  const { colors } = useTheme();
   return (
-    <Stack.Navigator screenOptions={stackScreenOptions}>
+    <Stack.Navigator screenOptions={createStackScreenOptions(colors)}>
       <Stack.Screen
         name={SCREENS.CART}
         component={CartScreen}

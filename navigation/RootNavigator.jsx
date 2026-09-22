@@ -1,22 +1,9 @@
-import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { useMemo } from 'react';
 
 import DrawerNavigator from './DrawerNavigator';
 import { DRAWER, SCREENS, STACKS } from './routes';
-import { colors } from '../theme';
-
-// Navigation theme is derived from the design tokens so screen backgrounds
-// and transitions match the rest of the app.
-const navigationTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: colors.coffee,
-    background: colors.cream,
-    card: colors.card,
-    text: colors.textPrimary,
-    border: colors.border,
-  },
-};
+import { useTheme } from '../context/ThemeContext';
 
 // Explicit paths for every screen: on web this turns the nested navigators into
 // readable URLs, and drinkId travels in the path instead of being lost on reload.
@@ -60,6 +47,26 @@ const linking = {
 };
 
 export default function RootNavigator() {
+  const { colors, isDark } = useTheme();
+
+  // React Navigation keeps its own theme for screen backgrounds and transitions,
+  // so the palette from the context is mapped onto it.
+  const navigationTheme = useMemo(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: colors.coffee,
+        background: colors.cream,
+        card: colors.card,
+        text: colors.textPrimary,
+        border: colors.border,
+      },
+    };
+  }, [colors, isDark]);
+
   return (
     <NavigationContainer theme={navigationTheme} linking={linking}>
       <DrawerNavigator />

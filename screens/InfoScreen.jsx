@@ -1,12 +1,16 @@
+import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import CustomButton from '../components/CustomButton';
-import { colors, radii, sizes, spacing, typography } from '../theme';
+import { radii, sizes, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 // Shared layout for the two drawer screens: they differ only by content,
 // so the data comes from route params set in the drawer navigator.
 export default function InfoScreen({ route, navigation }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { icon = 'information-circle-outline', title = '', text = '', rows = [] } =
     route.params ?? {};
 
@@ -35,7 +39,8 @@ export default function InfoScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   content: {
     padding: spacing.xxl,
     gap: spacing.md,

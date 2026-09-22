@@ -1,18 +1,24 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import CustomButton from '../components/CustomButton';
 import QuantityStepper from '../components/QuantityStepper';
 import RequestState from '../components/RequestState';
+import { useDispatch } from 'react-redux';
+
 import { CATEGORIES, fetchDrinkById } from '../api/coffee';
+import { addItem } from '../store/cartSlice';
 import { SCREENS, STACKS, TITLES } from '../navigation/routes';
 import { STATUS } from '../hooks/useCoffeeMenu';
-import { colors, radii, spacing, typography } from '../theme';
+import { radii, spacing, typography } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 const SIZES = ['250 мл', '350 мл', '450 мл'];
 const MILK = ['Звичайне', 'Безлактозне', 'Рослинне'];
 
 export default function ProductDetailsScreen({ route, navigation }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   // Params are never trusted: a missing id short-circuits to the error state
   // without firing a request.
   const drinkId = route.params?.drinkId;
@@ -25,6 +31,8 @@ export default function ProductDetailsScreen({ route, navigation }) {
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState(SIZES[0]);
   const [milk, setMilk] = useState(MILK[0]);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (!drinkId) return;
@@ -87,10 +95,10 @@ export default function ProductDetailsScreen({ route, navigation }) {
       ) : null}
 
       <Text style={styles.label}>РОЗМІР</Text>
-      <OptionRow options={SIZES} value={size} onChange={setSize} />
+      <OptionRow options={SIZES} value={size} onChange={setSize} styles={styles} />
 
       <Text style={styles.label}>МОЛОКО</Text>
-      <OptionRow options={MILK} value={milk} onChange={setMilk} />
+      <OptionRow options={MILK} value={milk} onChange={setMilk} styles={styles} />
 
       <View style={styles.quantityRow}>
         <Text style={styles.quantityLabel}>Кількість</Text>
@@ -100,20 +108,20 @@ export default function ProductDetailsScreen({ route, navigation }) {
       <CustomButton
         title={`Додати в кошик · ${drink.price}`}
         iconName="bag-add-outline"
-        // The cart lives in its own tab, so the drink id is passed across navigators:
-        // getParent() reaches the tab navigator, and params are forwarded to its screen.
-        onPress={() =>
-          navigation.getParent()?.navigate(STACKS.CART, {
-            screen: SCREENS.CART,
-            params: { addedDrinkId: drink.id, category },
-          })
-        }
+        // The drink is already loaded here, so it goes straight into the store —
+        // no second request. Navigation then just switches to the cart tab.
+        onPress={() => {
+          dispatch(addItem(drink));
+          navigation.getParent()?.navigate(STACKS.CART, { screen: SCREENS.CART });
+        }}
       />
     </ScrollView>
   );
 }
 
-function OptionRow({ options, value, onChange }) {
+// Styles arrive as a prop: they already depend on the active palette,
+// so the row does not need its own theme subscription.
+function OptionRow({ options, value, onChange, styles }) {
   return (
     <View style={styles.optionRow}>
       {options.map((option) => (
@@ -130,7 +138,8 @@ function OptionRow({ options, value, onChange }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   content: {
     padding: spacing.xxl,
     gap: spacing.md,
